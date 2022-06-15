@@ -9,7 +9,7 @@ func main() {
 		panic(err)
 	}
 
-	graph := genGraph(fileMembers, analyzer.callgraph)
+	graph := genGraph(analyzer.prog.Fset, fileMembers, analyzer.callgraph)
 
 	dot, err := renderDot(&graph)
 	if err != nil {

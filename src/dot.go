@@ -20,10 +20,14 @@ const tmplGraph = `digraph {
 	{{range .Tables}}
 	{{template "table" .}}
 	{{end}}
+
+	{{range .Edges}}
+	{{template "edge" .}}
+	{{end}}
 }`
 
 const tmplTable = `{{define "table"}}
-"{{.Id}}" [id="{{.Id}}", label=<
+{{.Id}} [id="{{.Id}}", label=<
 	<TABLE BORDER="0" CELLBORDER="0">
 	<TR><TD WIDTH="230" BORDER="0"><FONT POINT-SIZE="12">{{.Title}}</FONT></TD></TR>
 
@@ -41,10 +45,14 @@ const tmplTable = `{{define "table"}}
 {{end}}`
 
 const tmplCell = `{{define "cell"}}
-<TR><TD>{{.Title}}</TD></TR>
+<TR><TD PORT="{{.Id}}" ID="{{.Id}}">{{.Title}}</TD></TR>
 {{range .SubNodes}}
 {{template "cell" .}}
 {{end}}
+{{end}}`
+
+const tmplEdge = `{{define "edge"}}
+{{.From.TableID}}:{{.From.NodeID}} -> {{.To.TableID}}:{{.To.NodeID}}
 {{end}}`
 
 const tmplCluster = `{{define "cluster"}}
@@ -59,7 +67,7 @@ subgraph cluster_{{.Title}} {
 
 func renderDot(g *Graph) (dot string, err error) {
 	t := template.New("dot")
-	for _, s := range []string{tmplGraph, tmplTable, tmplCell, tmplCluster} {
+	for _, s := range []string{tmplGraph, tmplTable, tmplCell, tmplEdge, tmplCluster} {
 		if _, err = t.Parse(s); err != nil {
 			return
 		}

@@ -2,6 +2,7 @@ package main
 
 import (
 	"go/token"
+	"hash/fnv"
 	"path/filepath"
 	"sort"
 
@@ -16,18 +17,29 @@ type Presenter interface {
 type Graph struct {
 	Tables   []Table
 	Clusters []Cluster
-	// Edges   []*Edges
+	Edges    []Edge
 }
 
 type Table struct {
-	Id       string
+	Id       uint32
 	Title    string
 	Sections []Node
 }
 
 type Node struct {
+	Id       uint32
 	Title    string
 	SubNodes []Node
+}
+
+type Edge struct {
+	From EdgeNode
+	To   EdgeNode
+}
+
+type EdgeNode struct {
+	TableID uint32
+	NodeID  uint32
 }
 
 type Cluster struct {
@@ -36,17 +48,23 @@ type Cluster struct {
 	SubCluster []Cluster
 }
 
-func genGraph(fileMembers map[string][]ssa.Member, graph *callgraph.Graph) Graph {
+func genGraph(fset *token.FileSet, fileMembers map[string][]ssa.Member, graph *callgraph.Graph) Graph {
 	var tables []Table
+	var edges []Edge
 
 	for path, members := range fileMembers {
 		sort.Slice(members, func(i int, j int) bool {
 			return members[i].Pos() > members[j].Pos()
 		})
 
+		fileID := hash(path)
 		nodes := make(map[token.Pos][]Node)
+
 		for _, member := range members {
+			nodeID := uint32(member.Pos())
+
 			node := Node{
+				Id:    nodeID,
 				Title: member.Name(),
 			}
 
@@ -61,6 +79,17 @@ func genGraph(fileMembers map[string][]ssa.Member, graph *callgraph.Graph) Graph
 					reverse(subNodes)
 					node.SubNodes = subNodes
 				}
+
+				for _, edge := range graph.Nodes[fn].In {
+					caller := edge.Caller
+					callerPos := caller.Func.Pos()
+					callerFileID := hash(fset.Position(callerPos).Filename)
+
+					edges = append(edges, Edge{
+						EdgeNode{callerFileID, uint32(callerPos)},
+						EdgeNode{fileID, nodeID},
+					})
+				}
 			}
 
 			nodes[key] = append(nodes[key], node)
@@ -68,7 +97,7 @@ func genGraph(fileMembers map[string][]ssa.Member, graph *callgraph.Graph) Graph
 
 		reverse(nodes[token.NoPos])
 		tables = append(tables, Table{
-			Id:       path,
+			Id:       fileID,
 			Title:    filepath.Base(path),
 			Sections: nodes[token.NoPos],
 		})
@@ -76,7 +105,14 @@ func genGraph(fileMembers map[string][]ssa.Member, graph *callgraph.Graph) Graph
 
 	return Graph{
 		Tables: tables,
+		Edges:  edges,
 	}
+}
+
+func hash(s string) uint32 {
+	h := fnv.New32a()
+	h.Write([]byte(s))
+	return h.Sum32()
 }
 
 func reverse[S ~[]E, E any](s S) {
