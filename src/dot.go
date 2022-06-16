@@ -2,6 +2,8 @@ package main
 
 import (
 	"bytes"
+	"fmt"
+	"strings"
 	"text/template"
 )
 
@@ -45,7 +47,7 @@ const tmplTable = `{{define "table"}}
 {{end}}`
 
 const tmplCell = `{{define "cell"}}
-<TR><TD PORT="{{.Id}}" ID="{{.Id}}">{{.Title}}</TD></TR>
+<TR><TD PORT="{{.Id}}" ID="{{.Id}}">{{.FormattedTitle}}</TD></TR>
 {{range .SubNodes}}
 {{template "cell" .}}
 {{end}}
@@ -81,4 +83,18 @@ func renderDot(g *Graph) (dot string, err error) {
 	dot = buf.String()
 
 	return
+}
+
+func (node Node) FormattedTitle() string {
+	title := node.Title
+
+	if strings.LastIndex(title, "]") == -1 {
+		return title
+	}
+
+	start := strings.IndexRune(title, '[')
+
+	args := strings.Split(title[start:], " ")
+
+	return fmt.Sprintf("%s<BR/>%s", title[:start], strings.Join(args, "<BR/>"))
 }
