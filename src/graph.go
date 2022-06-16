@@ -50,7 +50,7 @@ type Cluster struct {
 
 func genGraph(fset *token.FileSet, fileMembers map[string][]ssa.Member, graph *callgraph.Graph) Graph {
 	var tables []Table
-	var edges []Edge
+	edgeSet := make(map[Edge]struct{})
 
 	for path, members := range fileMembers {
 		sort.Slice(members, func(i int, j int) bool {
@@ -85,10 +85,10 @@ func genGraph(fset *token.FileSet, fileMembers map[string][]ssa.Member, graph *c
 					callerPos := caller.Func.Pos()
 					callerFileID := hash(fset.Position(callerPos).Filename)
 
-					edges = append(edges, Edge{
+					edgeSet[Edge{
 						EdgeNode{callerFileID, uint32(callerPos)},
 						EdgeNode{fileID, nodeID},
-					})
+					}] = struct{}{}
 				}
 			}
 
@@ -101,6 +101,11 @@ func genGraph(fset *token.FileSet, fileMembers map[string][]ssa.Member, graph *c
 			Title:    filepath.Base(path),
 			Sections: nodes[token.NoPos],
 		})
+	}
+
+	edges := make([]Edge, 0, len(edgeSet))
+	for edge := range edgeSet {
+		edges = append(edges, edge)
 	}
 
 	return Graph{
