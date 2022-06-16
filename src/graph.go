@@ -70,6 +70,8 @@ func genGraph(fset *token.FileSet, fileMembers map[string][]ssa.Member, graph *c
 
 			key := token.NoPos
 			if fn, ok := member.(*ssa.Function); ok {
+				node.Id = uint32(graph.Nodes[fn].ID)
+
 				parent := fn.Parent()
 				if parent != nil {
 					key = parent.Pos()
@@ -84,10 +86,11 @@ func genGraph(fset *token.FileSet, fileMembers map[string][]ssa.Member, graph *c
 					caller := edge.Caller
 					callerPos := caller.Func.Pos()
 					callerFileID := hash(fset.Position(callerPos).Filename)
+					callerID := caller.ID
 
 					edgeSet[Edge{
-						EdgeNode{callerFileID, uint32(callerPos)},
-						EdgeNode{fileID, nodeID},
+						EdgeNode{callerFileID, uint32(callerID)},
+						EdgeNode{fileID, node.Id},
 					}] = struct{}{}
 				}
 			}

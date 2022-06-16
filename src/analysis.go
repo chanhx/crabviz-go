@@ -73,18 +73,18 @@ func (a *Analyzer) Analyze(
 		}
 	}
 
-	for node := range graph.Nodes {
-		if node == nil {
+	for fn := range graph.Nodes {
+		if fn == nil {
 			continue
 		}
 
-		pos := fset.Position(node.Pos())
+		pos := fset.Position(fn.Pos())
 		filename := pos.Filename
 		if _, ok := fileMembers[filename]; !ok {
 			continue
 		}
 
-		fileMembers[filename] = append(fileMembers[filename], node)
+		fileMembers[filename] = append(fileMembers[filename], fn)
 	}
 
 	a.prog = prog
