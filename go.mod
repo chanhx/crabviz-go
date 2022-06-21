@@ -1,4 +1,4 @@
-module github.com/chanhx/crabviz-go/src
+module crabviz-go
 
 go 1.18
 

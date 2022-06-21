@@ -1,4 +1,4 @@
-package main
+package graph
 
 import (
 	"go/token"
@@ -48,7 +48,7 @@ type Cluster struct {
 	SubCluster []Cluster
 }
 
-func genGraph(fset *token.FileSet, fileMembers map[string][]ssa.Member, graph *callgraph.Graph) Graph {
+func GenGraph(fset *token.FileSet, fileMembers map[string][]ssa.Member, graph *callgraph.Graph) Graph {
 	var tables []Table
 	edgeSet := make(map[Edge]struct{})
 

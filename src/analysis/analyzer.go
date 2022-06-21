@@ -1,9 +1,12 @@
-package main
+package analysis
 
 import (
 	"fmt"
 	"go/build"
 	"go/token"
+	"log"
+	"os/exec"
+	"strings"
 
 	"golang.org/x/tools/go/callgraph"
 	"golang.org/x/tools/go/callgraph/static"
@@ -13,10 +16,10 @@ import (
 )
 
 type Analyzer struct {
-	prog      *ssa.Program
-	pkgs      []*ssa.Package
-	mainPkg   *ssa.Package
-	callgraph *callgraph.Graph
+	Prog      *ssa.Program
+	Pkgs      []*ssa.Package
+	MainPkg   *ssa.Package
+	Callgraph *callgraph.Graph
 }
 
 func (a *Analyzer) Analyze(
@@ -24,14 +27,26 @@ func (a *Analyzer) Analyze(
 	tests bool,
 	args []string,
 ) (fileMembers map[string][]ssa.Member, err error) {
+	modulePath, err := getModulePath()
+
+	mode := packages.NeedName |
+		packages.NeedFiles |
+		packages.NeedCompiledGoFiles |
+		packages.NeedImports |
+		packages.NeedTypes |
+		packages.NeedSyntax |
+		packages.NeedTypesInfo |
+		packages.NeedDeps |
+		packages.NeedModule
+
 	cfg := &packages.Config{
-		Mode:       packages.LoadAllSyntax,
+		Mode:       mode,
 		Tests:      tests,
 		Dir:        dir,
 		BuildFlags: build.Default.BuildTags,
 	}
 
-	initial, err := packages.Load(cfg, args...)
+	initial, err := packages.Load(cfg, fmt.Sprintf("%s/...", modulePath))
 	if err != nil {
 		return
 	}
@@ -87,9 +102,21 @@ func (a *Analyzer) Analyze(
 		fileMembers[filename] = append(fileMembers[filename], fn)
 	}
 
-	a.prog = prog
-	a.pkgs = pkgs
-	a.callgraph = graph
+	a.Prog = prog
+	a.Pkgs = pkgs
+	a.Callgraph = graph
 
 	return
+}
+
+func getModulePath() (string, error) {
+	cmd := exec.Command("go", "list", "-m")
+
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("failed to get module path: %v", err)
+		return "", err
+	}
+
+	return strings.TrimSpace(string(output)), nil
 }

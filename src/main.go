@@ -1,20 +1,16 @@
 package main
 
-import "fmt"
+import (
+	"crabviz-go/src/app"
+	"log"
+	"net/http"
+)
 
 func main() {
-	analyzer := new(Analyzer)
-	fileMembers, err := analyzer.Analyze("", false, []string{})
-	if err != nil {
-		panic(err)
-	}
+	app := app.NewApp()
 
-	graph := genGraph(analyzer.prog.Fset, fileMembers, analyzer.callgraph)
+	addr := ":8090"
+	log.Printf("http serving at %s", addr)
 
-	dot, err := renderDot(&graph)
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(dot)
+	http.ListenAndServe(addr, app)
 }

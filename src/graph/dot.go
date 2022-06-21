@@ -1,8 +1,11 @@
-package main
+package graph
 
 import (
 	"bytes"
 	"fmt"
+	"io"
+	"log"
+	"os/exec"
 	"strings"
 	"text/template"
 )
@@ -67,7 +70,7 @@ subgraph cluster_{{.Title}} {
 };
 {{end}}`
 
-func renderDot(g *Graph) (dot string, err error) {
+func RenderDot(g *Graph) (dot string, err error) {
 	t := template.New("dot")
 	for _, s := range []string{tmplGraph, tmplTable, tmplCell, tmplEdge, tmplCluster} {
 		if _, err = t.Parse(s); err != nil {
@@ -97,4 +100,31 @@ func (node Node) FormattedTitle() string {
 	args := strings.Split(title[start:], " ")
 
 	return fmt.Sprintf("%s<BR/>%s", title[:start], strings.Join(args, "<BR/>"))
+}
+
+func DotExport(dot string, format string) ([]byte, error) {
+	cmd := exec.Command("dot", "-Tsvg")
+	stdin, err := cmd.StdinPipe()
+	if err != nil {
+		return []byte{}, err
+	}
+
+	io.WriteString(stdin, dot)
+	stdin.Close()
+
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Fatalf("failed to export %s: %v", format, err)
+	}
+
+	return output, nil
+}
+
+func DotExportSVG(dot string) (string, error) {
+	output, err := DotExport(dot, "svg")
+	if err != nil {
+		return "", err
+	}
+
+	return string(output), nil
 }
