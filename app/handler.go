@@ -40,7 +40,7 @@ func (app *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	g := graph.GenGraph(app.analyzer.Prog.Fset, fileMembers, app.analyzer.Callgraph)
+	g := graph.GenGraph(app.analyzer.Prog.Fset, fileMembers, app.analyzer.Callgraph, app.analyzer.PkgFiles)
 
 	dot, err := graph.RenderDot(&g)
 	if err != nil {

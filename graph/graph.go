@@ -44,12 +44,12 @@ type EdgeNode struct {
 }
 
 type Cluster struct {
-	Title      string
-	nodes      []string
-	SubCluster []Cluster
+	Title       string
+	Nodes       []uint32
+	SubClusters []Cluster
 }
 
-func GenGraph(fset *token.FileSet, fileMembers map[string][]ssa.Member, graph *callgraph.Graph) Graph {
+func GenGraph(fset *token.FileSet, fileMembers map[string][]ssa.Member, graph *callgraph.Graph, pkgFiles map[*ssa.Package][]string) Graph {
 	var tables []Table
 	edgeSet := make(map[Edge]struct{})
 
@@ -113,9 +113,29 @@ func GenGraph(fset *token.FileSet, fileMembers map[string][]ssa.Member, graph *c
 		edges = append(edges, edge)
 	}
 
+	var clusters []Cluster
+	for pkg, files := range pkgFiles {
+		var nodes []uint32
+		for _, file := range files {
+			nodes = append(nodes, hash(file))
+		}
+
+		if pkg == nil {
+			continue
+		}
+
+		cluster := Cluster{
+			Title: pkg.Pkg.Path(),
+			Nodes: nodes,
+		}
+
+		clusters = append(clusters, cluster)
+	}
+
 	return Graph{
-		Tables: tables,
-		Edges:  edges,
+		Tables:   tables,
+		Edges:    edges,
+		Clusters: clusters,
 	}
 }
 

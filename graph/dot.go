@@ -29,6 +29,10 @@ const tmplGraph = `digraph {
 	{{range .Edges}}
 	{{template "edge" .}}
 	{{end}}
+
+	{{range .Clusters}}
+	{{template "cluster" .}}
+	{{end}}
 }`
 
 const tmplTable = `{{define "table"}}
@@ -61,12 +65,16 @@ const tmplEdge = `{{define "edge"}}
 {{end}}`
 
 const tmplCluster = `{{define "cluster"}}
-subgraph cluster_{{.Title}} {
+subgraph "cluster_{{.Title}}" {
 	label = "{{.Title}}";
 
-	{{.Nodes}}
+	{{range .Nodes}}
+	{{.}}
+	{{end}}
 
-	{{.Subgraph}}
+	{{range .SubClusters}}
+	{{template "cluster" .}}
+	{{end}}
 };
 {{end}}`
 

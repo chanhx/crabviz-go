@@ -18,7 +18,7 @@ import (
 
 type Analyzer struct {
 	Prog      *ssa.Program
-	Pkgs      []*ssa.Package
+	PkgFiles  map[*ssa.Package][]string
 	MainPkg   *ssa.Package
 	Callgraph *callgraph.Graph
 }
@@ -72,10 +72,21 @@ func (a *Analyzer) Analyze(
 	fset := prog.Fset
 	graph := static.CallGraph(prog)
 
+	a.PkgFiles = make(map[*ssa.Package][]string)
+	pkgFiles := make(map[*ssa.Package]map[string]struct{})
 	fileMembers = make(map[string][]ssa.Member)
 
 	for _, pkg := range pkgs {
+		pkgFiles[pkg] = make(map[string]struct{})
+
 		for _, member := range pkg.Members {
+			switch member.Token() {
+			// `pkg.Members` does not include methods,
+			// use `graph.Nodes` to get all functions and methods
+			case token.CONST, token.VAR, token.FUNC:
+				continue
+			}
+
 			pos := fset.Position(member.Pos())
 			filename := pos.Filename
 
@@ -90,6 +101,7 @@ func (a *Analyzer) Analyze(
 				continue
 			}
 
+			pkgFiles[pkg][filename] = struct{}{}
 			fileMembers[filename] = append(fileMembers[filename], member)
 		}
 	}
@@ -109,11 +121,19 @@ func (a *Analyzer) Analyze(
 			continue
 		}
 
+		if fn.Pkg != nil {
+			pkgFiles[fn.Pkg][filename] = struct{}{}
+		}
 		fileMembers[filename] = append(fileMembers[filename], fn)
 	}
 
+	for pkg, files := range pkgFiles {
+		for file := range files {
+			a.PkgFiles[pkg] = append(a.PkgFiles[pkg], file)
+		}
+	}
+
 	a.Prog = prog
-	a.Pkgs = pkgs
 	a.Callgraph = graph
 
 	return
