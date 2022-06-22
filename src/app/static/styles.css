@@ -1,0 +1,103 @@
+@import "variables.css";
+
+.edge,
+.cell.fn {
+  cursor: pointer;
+}
+.cell {
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+
+/* Cell */
+
+.cell polygon {
+  fill: var(--node-color);
+}
+
+.cell.selected polygon {
+  fill: var(--selected-cell-color);
+}
+
+
+/* Edge */
+
+.edge path {
+  stroke: var(--edge-color);
+  stroke-width: 3;
+}
+.edge polygon {
+  stroke: var(--edge-color);
+  fill: var(--edge-color);
+}
+
+.edge:hover path:not(.hover-path) {
+  stroke: var(--highlight-edge-color);
+}
+.edge:hover polygon {
+  stroke: var(--highlight-edge-color);
+  fill: var(--highlight-edge-color);
+}
+
+.edge path.hover-path {
+  stroke: transparent;
+  stroke-width: 15;
+}
+
+.edge.selected path:not(.hover-path) {
+  stroke: var(--selected-edge-color);
+}
+.edge.selected polygon {
+  stroke: var(--selected-edge-color);
+  fill: var(--selected-edge-color);
+}
+
+.edge.incoming path:not(.hover-path) {
+  stroke: var(--incoming-edge-color);
+}
+.edge.incoming polygon {
+  stroke: var(--incoming-edge-color);
+  fill: var(--incoming-edge-color);
+}
+
+.edge.outgoing path:not(.hover-path) {
+  stroke: var(--outgoing-edge-color);
+}
+.edge.outgoing polygon {
+  stroke: var(--outgoing-edge-color);
+  fill: var(--outgoing-edge-color);
+}
+
+.edge.incoming.outgoing path:not(.hover-path) {
+  stroke: var(--recurse-edge-color);
+}
+.edge.incoming.outgoing polygon {
+  stroke: var(--recurse-edge-color);
+  fill: var(--recurse-edge-color);
+}
+
+
+/* Node */
+
+.node path {
+  fill: var(--node-color);
+}
+.node polygon {
+  stroke: var(--node-content-color);
+}
+.node text {
+  fill: var(--node-content-color);
+}
+
+.node.selected path {
+  stroke: var(--node-highlight-color);
+}
+
+/* selection fade */
+.fade {
+  opacity: 0.05;
+}

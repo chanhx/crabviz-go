@@ -12,5 +12,7 @@ func main() {
 	addr := ":8090"
 	log.Printf("http serving at %s", addr)
 
-	http.ListenAndServe(addr, app)
+	http.Handle("/", app)
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./app/static"))))
+	http.ListenAndServe(addr, nil)
 }

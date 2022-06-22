@@ -12,8 +12,14 @@ import (
 const tmpl = `
 <!DOCTYPE html>
 <html>
+<head>
+    <link rel="stylesheet" type="text/css" href="static/styles.css">
+    <script src="static/path-data-polyfill.min.js"></script>
+    <script src="static/svg-pan-zoom.min.js"></script>
+</head>
 <body>
     {{.}}
+    <script src="static/preprocess.js"></script>
 </body>
 </html>
 `

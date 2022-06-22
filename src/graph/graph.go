@@ -30,6 +30,7 @@ type Node struct {
 	Id       uint32
 	Title    string
 	SubNodes []Node
+	Classes  []string
 }
 
 type Edge struct {
@@ -71,6 +72,7 @@ func GenGraph(fset *token.FileSet, fileMembers map[string][]ssa.Member, graph *c
 			key := token.NoPos
 			if fn, ok := member.(*ssa.Function); ok {
 				node.Id = uint32(graph.Nodes[fn].ID)
+				node.Classes = append(node.Classes, "fn")
 
 				parent := fn.Parent()
 				if parent != nil {

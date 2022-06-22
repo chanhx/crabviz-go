@@ -39,7 +39,7 @@ const tmplTable = `{{define "table"}}
 	{{range .Sections}}
 	<TR><TD>
 	<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="4" CELLBORDER="1">
-	{{template "cell" .}}
+	{{template "cell" cell . $.Id}}
 	</TABLE>
 	</TD></TR>
 	{{end}}
@@ -50,14 +50,14 @@ const tmplTable = `{{define "table"}}
 {{end}}`
 
 const tmplCell = `{{define "cell"}}
-<TR><TD PORT="{{.Id}}" ID="{{.Id}}">{{.FormattedTitle}}</TD></TR>
+<TR><TD PORT="{{.Id}}" ID="{{.TableID}}:{{.Id}}" HREF="remove_me_url.cell{{.ClassesStr}}">{{.FormattedTitle}}</TD></TR>
 {{range .SubNodes}}
-{{template "cell" .}}
+{{template "cell" cell . $.TableID}}
 {{end}}
 {{end}}`
 
 const tmplEdge = `{{define "edge"}}
-{{.From.TableID}}:{{.From.NodeID}} -> {{.To.TableID}}:{{.To.NodeID}}
+{{.From.TableID}}:{{.From.NodeID}} -> {{.To.TableID}}:{{.To.NodeID}} [{{.Attributes}}]
 {{end}}`
 
 const tmplCluster = `{{define "cluster"}}
@@ -71,7 +71,8 @@ subgraph cluster_{{.Title}} {
 {{end}}`
 
 func RenderDot(g *Graph) (dot string, err error) {
-	t := template.New("dot")
+	t := template.New("dot").Funcs(template.FuncMap{"cell": cell})
+
 	for _, s := range []string{tmplGraph, tmplTable, tmplCell, tmplEdge, tmplCluster} {
 		if _, err = t.Parse(s); err != nil {
 			return
@@ -88,6 +89,15 @@ func RenderDot(g *Graph) (dot string, err error) {
 	return
 }
 
+type Cell struct {
+	Node
+	TableID uint32
+}
+
+func cell(node Node, tableID uint32) Cell {
+	return Cell{node, tableID}
+}
+
 func (node Node) FormattedTitle() string {
 	title := node.Title
 
@@ -100,6 +110,26 @@ func (node Node) FormattedTitle() string {
 	args := strings.Split(title[start:], " ")
 
 	return fmt.Sprintf("%s<BR/>%s", title[:start], strings.Join(args, "<BR/>"))
+}
+
+func (node Node) ClassesStr() string {
+	if len(node.Classes) == 0 {
+		return ""
+	}
+	return "." + strings.Join(node.Classes, ".")
+}
+
+func (e Edge) Attributes() string {
+	var attrs []string
+
+	id := fmt.Sprintf(`id="%d:%d -> %d:%d"`, e.From.TableID, e.From.NodeID, e.To.TableID, e.To.NodeID)
+	attrs = append(attrs, id)
+
+	if e.From.TableID == e.To.TableID {
+		attrs = append(attrs, `class="modify-me"`)
+	}
+
+	return strings.Join(attrs, ", ")
 }
 
 func DotExport(dot string, format string) ([]byte, error) {
