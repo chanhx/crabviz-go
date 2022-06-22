@@ -6,6 +6,7 @@ import (
 	"go/token"
 	"log"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"golang.org/x/tools/go/callgraph"
@@ -28,6 +29,14 @@ func (a *Analyzer) Analyze(
 	args []string,
 ) (fileMembers map[string][]ssa.Member, err error) {
 	modulePath, err := getModulePath()
+	if err != nil {
+		return nil, err
+	}
+
+	execPath, err := filepath.Abs("./")
+	if err != nil {
+		return nil, err
+	}
 
 	mode := packages.NeedName |
 		packages.NeedFiles |
@@ -74,13 +83,10 @@ func (a *Analyzer) Analyze(
 				continue
 			}
 
-			if _, ok := fileMembers[filename]; !ok {
-				fileMembers[filename] = []ssa.Member{}
-			}
-
+			switch member.Token() {
 			// `pkg.Members` does not include methods,
 			// use `graph.Nodes` to get all functions and methods
-			if member.Token() == token.FUNC {
+			case token.CONST, token.VAR, token.FUNC:
 				continue
 			}
 
@@ -95,7 +101,11 @@ func (a *Analyzer) Analyze(
 
 		pos := fset.Position(fn.Pos())
 		filename := pos.Filename
-		if _, ok := fileMembers[filename]; !ok {
+
+		if filename == "" {
+			continue
+		}
+		if !strings.HasPrefix(filename, execPath) {
 			continue
 		}
 
