@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"text/template"
 
-	"crabviz-go/src/analysis"
-	"crabviz-go/src/graph"
+	"crabviz-go/analysis"
+	"crabviz-go/graph"
 )
 
 const tmpl = `

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"crabviz-go/src/app"
+	"crabviz-go/app"
 	"log"
 	"net/http"
 )
