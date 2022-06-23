@@ -25,17 +25,19 @@ const tmpl = `
 `
 
 type App struct {
+	path     string
 	analyzer *analysis.Analyzer
 }
 
-func NewApp() *App {
+func NewApp(path string) *App {
 	return &App{
+		path:     path,
 		analyzer: new(analysis.Analyzer),
 	}
 }
 
 func (app *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	fileMembers, err := app.analyzer.Analyze("", false, []string{})
+	fileMembers, err := app.analyzer.Analyze(app.path, false, []string{})
 	if err != nil {
 		panic(err)
 	}

@@ -28,12 +28,12 @@ func (a *Analyzer) Analyze(
 	tests bool,
 	args []string,
 ) (fileMembers map[string][]ssa.Member, err error) {
-	modulePath, err := getModulePath()
+	srcDir, err := filepath.Abs(dir)
 	if err != nil {
 		return nil, err
 	}
 
-	execPath, err := filepath.Abs("./")
+	modulePath, err := getModulePath(srcDir)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +51,7 @@ func (a *Analyzer) Analyze(
 	cfg := &packages.Config{
 		Mode:       mode,
 		Tests:      tests,
-		Dir:        dir,
+		Dir:        srcDir,
 		BuildFlags: build.Default.BuildTags,
 	}
 
@@ -117,7 +117,7 @@ func (a *Analyzer) Analyze(
 		if filename == "" {
 			continue
 		}
-		if !strings.HasPrefix(filename, execPath) {
+		if !strings.HasPrefix(filename, srcDir) {
 			continue
 		}
 
@@ -139,8 +139,9 @@ func (a *Analyzer) Analyze(
 	return
 }
 
-func getModulePath() (string, error) {
+func getModulePath(dir string) (string, error) {
 	cmd := exec.Command("go", "list", "-m")
+	cmd.Dir = dir
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {

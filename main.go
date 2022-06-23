@@ -3,6 +3,7 @@ package main
 import (
 	"crabviz-go/app"
 	"embed"
+	"flag"
 	"io/fs"
 	"log"
 	"net/http"
@@ -12,7 +13,14 @@ import (
 var static embed.FS
 
 func main() {
-	app := app.NewApp()
+	flag.Parse()
+	args := flag.Args()
+
+	if len(args) != 1 {
+		log.Fatal("need a path argument")
+	}
+
+	app := app.NewApp(args[0])
 
 	addr := ":8090"
 	log.Printf("http serving at %s", addr)
