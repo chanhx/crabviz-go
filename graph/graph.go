@@ -33,9 +33,18 @@ type Node struct {
 	Classes  []string
 }
 
+type EdgeStyle uint8
+
+const (
+	Default EdgeStyle = iota
+	Dashed
+	DotArrow
+)
+
 type Edge struct {
-	From EdgeNode
-	To   EdgeNode
+	From  EdgeNode
+	To    EdgeNode
+	Style EdgeStyle
 }
 
 type EdgeNode struct {
@@ -97,6 +106,7 @@ func GenGraph(fset *token.FileSet, fileMembers map[string][]ssa.Member, graph *c
 					edgeSet[Edge{
 						EdgeNode{callerFileID, uint32(callerID)},
 						EdgeNode{fileID, node.Id},
+						edgeStyle(edge),
 					}] = struct{}{}
 				}
 			}
@@ -140,6 +150,17 @@ func GenGraph(fset *token.FileSet, fileMembers map[string][]ssa.Member, graph *c
 		Tables:   tables,
 		Edges:    edges,
 		Clusters: clusters,
+	}
+}
+
+func edgeStyle(edge *callgraph.Edge) EdgeStyle {
+	switch edge.Site.(type) {
+	case *ssa.Go:
+		return Dashed
+	case *ssa.Defer:
+		return DotArrow
+	default:
+		return Default
 	}
 }
 

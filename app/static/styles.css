@@ -26,7 +26,7 @@
 
 /* Edge */
 
-.edge path {
+.edge :is(path, ellipse, polyline) {
   stroke: var(--edge-color);
   stroke-width: 3;
 }
@@ -35,7 +35,7 @@
   fill: var(--edge-color);
 }
 
-.edge:hover path:not(.hover-path) {
+.edge:hover :is(path, ellipse, polyline):not(.hover-path) {
   stroke: var(--highlight-edge-color);
 }
 .edge:hover polygon {
@@ -48,7 +48,7 @@
   stroke-width: 15;
 }
 
-.edge.selected path:not(.hover-path) {
+.edge.selected :is(path, ellipse, polyline):not(.hover-path) {
   stroke: var(--selected-edge-color);
 }
 .edge.selected polygon {
@@ -56,7 +56,7 @@
   fill: var(--selected-edge-color);
 }
 
-.edge.incoming path:not(.hover-path) {
+.edge.incoming :is(path, ellipse, polyline):not(.hover-path) {
   stroke: var(--incoming-edge-color);
 }
 .edge.incoming polygon {
@@ -64,7 +64,7 @@
   fill: var(--incoming-edge-color);
 }
 
-.edge.outgoing path:not(.hover-path) {
+.edge.outgoing :is(path, ellipse, polyline):not(.hover-path) {
   stroke: var(--outgoing-edge-color);
 }
 .edge.outgoing polygon {
@@ -72,7 +72,7 @@
   fill: var(--outgoing-edge-color);
 }
 
-.edge.incoming.outgoing path:not(.hover-path) {
+.edge.incoming.outgoing :is(path, ellipse, polyline):not(.hover-path) {
   stroke: var(--recurse-edge-color);
 }
 .edge.incoming.outgoing polygon {

@@ -137,6 +137,13 @@ func (e Edge) Attributes() string {
 		attrs = append(attrs, `class="modify-me"`)
 	}
 
+	switch e.Style {
+	case Dashed:
+		attrs = append(attrs, `style="dashed"`)
+	case DotArrow:
+		attrs = append(attrs, `arrowhead="normalnoneodot"`)
+	}
+
 	return strings.Join(attrs, ", ")
 }
 
