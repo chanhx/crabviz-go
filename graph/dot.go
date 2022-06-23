@@ -3,7 +3,6 @@ package graph
 import (
 	"bytes"
 	"fmt"
-	"io"
 	"log"
 	"os/exec"
 	"strings"
@@ -149,13 +148,7 @@ func (e Edge) Attributes() string {
 
 func DotExport(dot string, format string) ([]byte, error) {
 	cmd := exec.Command("dot", "-Tsvg")
-	stdin, err := cmd.StdinPipe()
-	if err != nil {
-		return []byte{}, err
-	}
-
-	io.WriteString(stdin, dot)
-	stdin.Close()
+	cmd.Stdin = bytes.NewReader([]byte(dot))
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
