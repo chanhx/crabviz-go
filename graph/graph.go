@@ -71,10 +71,7 @@ func GenGraph(fset *token.FileSet, fileMembers map[string][]ssa.Member, graph *c
 		nodes := make(map[token.Pos][]Node)
 
 		for _, member := range members {
-			nodeID := uint32(member.Pos())
-
 			node := Node{
-				Id:    nodeID,
 				Title: member.Name(),
 			}
 
