@@ -14,12 +14,12 @@ const tmpl = `
 <html>
 <head>
     <link rel="stylesheet" type="text/css" href="static/styles.css">
-    <script src="static/path-data-polyfill.min.js"></script>
-    <script src="static/svg-pan-zoom.min.js"></script>
+    <script type="text/javascript" src="static/path-data-polyfill.min.js"></script>
+    <script type="text/javascript" src="static/svg-pan-zoom.min.js"></script>
 </head>
 <body>
     {{.}}
-    <script src="static/preprocess.js"></script>
+    <script type="text/javascript" src="static/preprocess.js"></script>
 </body>
 </html>
 `
@@ -63,6 +63,7 @@ func (app *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("X-Content-Type-Options", "nosniff")
 	if err = t.ExecuteTemplate(w, "graph", svg); err != nil {
 		log.Print(err.Error())
 		http.Error(w, http.StatusText(500), 500)
